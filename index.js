@@ -11,7 +11,7 @@ if (!BOT_TOKEN) {
 }
 
 const bot = new Telegraf(BOT_TOKEN);
-const GAME_URL = 'https://pustovoitmaxim.github.io/telegram-pong-game/';
+const GAME_URL = 'https://pustovoitmaxim.github.io/Pong/';
 
 // Middleware
 app.use(express.json());
@@ -75,3 +75,4 @@ app.listen(PORT, () => {
 bot.catch((err, ctx) => {
     console.error('Bot error:', err);
 });
+
