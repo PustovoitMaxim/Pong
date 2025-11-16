@@ -2,21 +2,21 @@ const { Telegraf } = require('telegraf');
 const express = require('express');
 
 const app = express();
-const BOT_TOKEN = process.env.BOT_TOKEN;
-const GAME_URL = 'https://PustovoitMaxim.github.io/telegram-pong-game/'; // ЗАМЕНИТЕ на ваш URL
 
-// Проверяем наличие токена
+// Проверяем, что токен установлен
+const BOT_TOKEN = process.env.BOT_TOKEN;
 if (!BOT_TOKEN) {
-    console.error('❌ BOT_TOKEN not found in environment variables');
+    console.error('❌ BOT_TOKEN is not set in environment variables.');
     process.exit(1);
 }
 
 const bot = new Telegraf(BOT_TOKEN);
+const GAME_URL = 'https://pustovoitmaxim.github.io/telegram-pong-game/'; // Замените на ваш URL
 
-// Middleware для парсинга JSON
+// Разрешаем парсинг JSON в Express
 app.use(express.json());
 
-// Команда /start
+// ==================== КОМАНДЫ БОТА ====================
 bot.start((ctx) => {
     ctx.reply(
         '🎮 Добро пожаловать в Pong Game!\n\n' +
@@ -34,7 +34,6 @@ bot.start((ctx) => {
     );
 });
 
-// Команда /play
 bot.command('play', (ctx) => {
     ctx.reply('Запускаем игру...', {
         reply_markup: {
@@ -45,7 +44,6 @@ bot.command('play', (ctx) => {
     );
 });
 
-// Команда /help
 bot.help((ctx) => {
     ctx.reply(
         '🎮 Pong Game Bot\n\n' +
@@ -56,16 +54,17 @@ bot.help((ctx) => {
         'Игра откроется прямо в Telegram!'
     );
 });
+// ==================== КОНЕЦ КОМАНД БОТА ====================
 
-// Настройка webhook
-app.use(await bot.createWebhook({ path: '/webhook' }));
+// Настройка Webhook маршрута для Telegram
+app.use(bot.webhookCallback('/webhook'));
 
-// Корневой маршрут для проверки работы
+// Простой маршрут для проверки работоспособности сервера
 app.get('/', (req, res) => {
     res.json({ 
-        status: 'Bot is running!',
-        service: 'Pong Game Bot',
-        timestamp: new Date().toISOString()
+        status: 'Pong Bot is running!', 
+        timestamp: new Date().toISOString(),
+        game_url: GAME_URL
     });
 });
 
@@ -73,19 +72,28 @@ app.get('/', (req, res) => {
 const PORT = process.env.PORT || 3000;
 
 // Запускаем сервер
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
     console.log(`✅ Bot server is running on port ${PORT}`);
     console.log(`🌐 Webhook path: /webhook`);
     console.log(`🎮 Game URL: ${GAME_URL}`);
+    
+    // Устанавливаем webhook после запуска сервера
+    try {
+        const webhookUrl = `https://${process.env.RENDER_EXTERNAL_HOSTNAME}/webhook`;
+        await bot.telegram.setWebhook(webhookUrl);
+        console.log(`✅ Webhook set to: ${webhookUrl}`);
+    } catch (error) {
+        console.error('❌ Failed to set webhook:', error);
+    }
 });
 
-// Обработка ошибок
+// Обработка ошибок бота
 bot.catch((err, ctx) => {
-    console.error('❌ Bot error:', err);
+    console.error(`❌ Bot error for update ${ctx.update.update_id}:`, err);
 });
 
+// Элегантное завершение работы
 process.on('SIGTERM', () => {
     console.log('🛑 Bot shutting down...');
     bot.stop();
 });
-
