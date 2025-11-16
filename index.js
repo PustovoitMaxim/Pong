@@ -3,7 +3,7 @@ const express = require('express');
 
 const app = express();
 const BOT_TOKEN = process.env.BOT_TOKEN;
-const GAME_URL = 'https://ваш-username.github.io/telegram-pong-game/'; // ЗАМЕНИТЕ на ваш URL
+const GAME_URL = 'https://PustovoitMaxim.github.io/telegram-pong-game/'; // ЗАМЕНИТЕ на ваш URL
 
 // Проверяем наличие токена
 if (!BOT_TOKEN) {
@@ -88,3 +88,4 @@ process.on('SIGTERM', () => {
     console.log('🛑 Bot shutting down...');
     bot.stop();
 });
+
